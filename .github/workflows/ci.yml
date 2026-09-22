@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain version
+        run: moon version --all
+
+      - name: Generated API surface must be up to date
+        run: |
+          moon info
+          git diff --exit-code
+
+      - name: Formatting must be clean
+        run: moon fmt --check
+
+      - name: Test
+        run: moon test
+
+      - name: Test (JavaScript backend, via node)
+        run: moon test --target js
+
+      - name: Test (wasm-gc backend)
+        run: moon test --target wasm-gc
