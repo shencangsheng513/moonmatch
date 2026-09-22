@@ -26,3 +26,16 @@ test "ProfileError Show texts are stable user-facing strings" {
     "receiver preference row 0 must rank every counterparty exactly once",
   )
 }
+
+///|
+test "QuotaError Show texts are stable user-facing strings" {
+  @test.assert_eq(QuotaLength(1, 2).to_string(), "got 1 quotas for 2 hospitals")
+  @test.assert_eq(
+    NonPositiveQuota(0, 0).to_string(),
+    "hospital 0 has quota 0, quotas must be positive",
+  )
+  @test.assert_eq(
+    NonPositiveQuota(3, -2).to_string(),
+    "hospital 3 has quota -2, quotas must be positive",
+  )
+}

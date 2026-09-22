@@ -18,7 +18,28 @@ pub fn ProfileError::to_repr(Self) -> @debug.Repr
 pub fn ProfileError::to_string(Self) -> String
 pub impl Show for ProfileError
 
+pub suberror QuotaError {
+  QuotaLength(Int, Int)
+  NonPositiveQuota(Int, Int)
+} derive(@debug.Debug)
+pub fn QuotaError::output(Self, &Logger) -> Unit
+pub fn QuotaError::to_repr(Self) -> @debug.Repr
+pub fn QuotaError::to_string(Self) -> String
+pub impl Show for QuotaError
+
 // Types and methods
+pub struct HRAssignment {
+  preferences : Preferences
+  quotas : Array[Int]
+  proposer_to_receiver : Array[Int]
+  receiver_holders : Array[Array[Int]]
+} derive(Eq, @debug.Debug)
+pub fn HRAssignment::blocking_pairs(Self) -> Array[(Int, Int)]
+pub fn HRAssignment::equal(Self, Self) -> Bool
+pub fn HRAssignment::is_stable(Self) -> Bool
+pub fn HRAssignment::not_equal(Self, Self) -> Bool
+pub fn HRAssignment::to_repr(Self) -> @debug.Repr
+
 pub struct Matching {
   preferences : Preferences
   proposer_to_receiver : Array[Int]
@@ -36,6 +57,7 @@ pub struct Preferences {
 } derive(Eq, @debug.Debug)
 pub fn Preferences::deferred_acceptance(Self) -> Matching
 pub fn Preferences::equal(Self, Self) -> Bool
+pub fn Preferences::hospital_residents(Self, Array[Int]) -> HRAssignment raise QuotaError
 pub fn Preferences::new(Array[Array[Int]], Array[Array[Int]]) -> Self raise ProfileError
 pub fn Preferences::not_equal(Self, Self) -> Bool
 pub fn Preferences::to_repr(Self) -> @debug.Repr
