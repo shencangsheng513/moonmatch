@@ -162,6 +162,78 @@ pub extend Matching with Eq::{not_equal, equal}
 pub extend Matching with @debug.Debug::{to_repr}
 
 ///|
+/// A claimed proposer->receiver table contradicts the market: wrong
+/// length, an out-of-range partner, or a receiver claimed twice.
+pub suberror CertificateError {
+  ClaimLength(Int, Int)
+  PartnerOutOfRange(Int, Int)
+  ReceiverHeldTwice(Int)
+} derive(Debug)
+
+///|
+pub extend CertificateError with @debug.Debug::{to_repr}
+
+///|
+pub impl Show for CertificateError with fn output(
+  self : CertificateError,
+  logger,
+) {
+  match self {
+    ClaimLength(got, expected) =>
+      logger.write_string(
+        "certificate claims \{got} proposals, expected \{expected}",
+      )
+    PartnerOutOfRange(p, r) =>
+      logger.write_string(
+        "proposer \{p} claims receiver \{r}, outside the market",
+      )
+    ReceiverHeldTwice(r) =>
+      logger.write_string("receiver \{r} is claimed twice")
+  }
+}
+
+///|
+pub extend CertificateError with Show::{to_string, output}
+
+///|
+/// Rebuild a Matching from a claimed proposer->receiver table so any
+/// outsider — auditor, CLI, test — can run `is_stable` on a
+/// certificate it was handed rather than on one the library just
+/// produced. `Matching` values are deliberately read-only outside
+/// this package; this validating door is how they are made. -1 means
+/// unmatched.
+pub fn Preferences::matching_from(
+  self : Preferences,
+  proposer_to_receiver : Array[Int],
+) -> Matching raise CertificateError {
+  let n = self.proposer_prefs.length()
+  let m = self.receiver_prefs.length()
+  if proposer_to_receiver.length() != n {
+    raise ClaimLength(proposer_to_receiver.length(), n)
+  }
+  let r2p = filled(m, -1)
+  for p in 0..<n {
+    let r = proposer_to_receiver[p]
+    if r >= 0 {
+      if r >= m {
+        raise PartnerOutOfRange(p, r)
+      }
+      if r2p[r] != -1 {
+        raise ReceiverHeldTwice(r)
+      }
+      r2p[r] = p
+    } else if r != -1 {
+      raise PartnerOutOfRange(p, r)
+    }
+  }
+  Matching::{
+    preferences: self,
+    proposer_to_receiver,
+    receiver_to_proposer: r2p,
+  }
+}
+
+///|
 /// Gale-Shapley deferred acceptance: every unmatched proposer keeps
 /// proposing down its list; receivers hold the best offer so far and
 /// reject the rest. At most `n * m` proposals, so it terminates fast,

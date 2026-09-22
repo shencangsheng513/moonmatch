@@ -89,3 +89,48 @@ test "Preferences::new rejects duplicate and out-of-range entries" {
     _ => fail("expected NotPermutation(range)")
   }
 }
+
+///|
+test "matching_from rebuilds a certificate that survives the round trip" {
+  let prefs = market([[1, 0, 2], [0, 1, 2], [0, 1, 2]], [
+    [2, 1, 0],
+    [0, 2, 1],
+    [0, 1, 2],
+  ])
+  let original = prefs.deferred_acceptance()
+  // An auditor holding only the p2p table can reconstruct the matching
+  // and re-run the stability certificate on it.
+  let handed = prefs.matching_from(original.proposer_to_receiver) catch {
+    e => fail("valid claim rejected: \{e}")
+  }
+  @test.assert_eq(handed, original)
+  // A tampered claim stays checkable and simply fails stability.
+  let tampered = prefs.matching_from([0, 1, 2]) catch {
+    e => fail("valid claim rejected: \{e}")
+  }
+  @test.assert_eq(tampered.is_stable(), false)
+  @test.assert_eq(tampered.blocking_pairs(), [(0, 1), (1, 0), (2, 0), (2, 1)])
+}
+
+///|
+test "matching_from rejects malformed claims" {
+  let prefs = market([[0, 1], [1, 0]], [[0, 1], [0, 1]])
+  try (prefs.matching_from([0]) : @moonmatch.Matching) catch {
+    @moonmatch.ClaimLength(1, 2) => ()
+    e => fail("expected ClaimLength, got \{e}")
+  } noraise {
+    _ => fail("expected ClaimLength")
+  }
+  try (prefs.matching_from([0, 5]) : @moonmatch.Matching) catch {
+    @moonmatch.PartnerOutOfRange(1, 5) => ()
+    e => fail("expected PartnerOutOfRange, got \{e}")
+  } noraise {
+    _ => fail("expected PartnerOutOfRange")
+  }
+  try (prefs.matching_from([1, 1]) : @moonmatch.Matching) catch {
+    @moonmatch.ReceiverHeldTwice(1) => ()
+    e => fail("expected ReceiverHeldTwice, got \{e}")
+  } noraise {
+    _ => fail("expected ReceiverHeldTwice")
+  }
+}

@@ -59,3 +59,19 @@ test "MarketError Show texts are stable user-facing strings" {
     "endowment must give each good to exactly one agent",
   )
 }
+
+///|
+test "CertificateError Show texts are stable user-facing strings" {
+  @test.assert_eq(
+    ClaimLength(1, 2).to_string(),
+    "certificate claims 1 proposals, expected 2",
+  )
+  @test.assert_eq(
+    PartnerOutOfRange(3, 5).to_string(),
+    "proposer 3 claims receiver 5, outside the market",
+  )
+  @test.assert_eq(
+    ReceiverHeldTwice(1).to_string(),
+    "receiver 1 is claimed twice",
+  )
+}

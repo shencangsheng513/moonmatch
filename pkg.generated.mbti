@@ -8,6 +8,16 @@ import {
 // Values
 
 // Errors
+pub suberror CertificateError {
+  ClaimLength(Int, Int)
+  PartnerOutOfRange(Int, Int)
+  ReceiverHeldTwice(Int)
+} derive(@debug.Debug)
+pub fn CertificateError::output(Self, &Logger) -> Unit
+pub fn CertificateError::to_repr(Self) -> @debug.Repr
+pub fn CertificateError::to_string(Self) -> String
+pub impl Show for CertificateError
+
 pub suberror MarketError {
   Empty
   RowNotPerm(Int)
@@ -81,6 +91,7 @@ pub struct Preferences {
 pub fn Preferences::deferred_acceptance(Self) -> Matching
 pub fn Preferences::equal(Self, Self) -> Bool
 pub fn Preferences::hospital_residents(Self, Array[Int]) -> HRAssignment raise QuotaError
+pub fn Preferences::matching_from(Self, Array[Int]) -> Matching raise CertificateError
 pub fn Preferences::new(Array[Array[Int]], Array[Array[Int]]) -> Self raise ProfileError
 pub fn Preferences::not_equal(Self, Self) -> Bool
 pub fn Preferences::to_repr(Self) -> @debug.Repr
