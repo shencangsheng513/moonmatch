@@ -8,6 +8,17 @@ import {
 // Values
 
 // Errors
+pub suberror MarketError {
+  Empty
+  RowNotPerm(Int)
+  EndowmentLength(Int, Int)
+  EndowmentNotPerm
+} derive(@debug.Debug)
+pub fn MarketError::output(Self, &Logger) -> Unit
+pub fn MarketError::to_repr(Self) -> @debug.Repr
+pub fn MarketError::to_string(Self) -> String
+pub impl Show for MarketError
+
 pub suberror ProfileError {
   Empty
   RowLength(Side, Int, Int, Int)
@@ -39,6 +50,18 @@ pub fn HRAssignment::equal(Self, Self) -> Bool
 pub fn HRAssignment::is_stable(Self) -> Bool
 pub fn HRAssignment::not_equal(Self, Self) -> Bool
 pub fn HRAssignment::to_repr(Self) -> @debug.Repr
+
+pub struct Market {
+  prefs : Array[Array[Int]]
+  endowment : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn Market::equal(Self, Self) -> Bool
+pub fn Market::is_individually_rational(Self, Array[Int]) -> Bool
+pub fn Market::new(Array[Array[Int]], Array[Int]) -> Self raise MarketError
+pub fn Market::not_equal(Self, Self) -> Bool
+pub fn Market::pareto_dominators(Self, Array[Int]) -> Array[Array[Int]]
+pub fn Market::to_repr(Self) -> @debug.Repr
+pub fn Market::top_trading_cycles(Self) -> Array[Int]
 
 pub struct Matching {
   preferences : Preferences

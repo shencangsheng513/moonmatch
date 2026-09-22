@@ -6,7 +6,7 @@ test "ProfileError Show texts are stable user-facing strings" {
   // Error messages are CLI output; pin the full wording so renames break
   // tests (this core has no String::contains, so equality is the check).
   @test.assert_eq(
-    Empty.to_string(),
+    ProfileError::Empty.to_string(),
     "a market needs at least one proposer and one receiver",
   )
   @test.assert_eq(
@@ -37,5 +37,25 @@ test "QuotaError Show texts are stable user-facing strings" {
   @test.assert_eq(
     NonPositiveQuota(3, -2).to_string(),
     "hospital 3 has quota -2, quotas must be positive",
+  )
+}
+
+///|
+test "MarketError Show texts are stable user-facing strings" {
+  @test.assert_eq(
+    MarketError::Empty.to_string(),
+    "a housing market needs at least one agent",
+  )
+  @test.assert_eq(
+    RowNotPerm(2).to_string(),
+    "agent 2 preference row must rank every good exactly once",
+  )
+  @test.assert_eq(
+    EndowmentLength(1, 2).to_string(),
+    "endowment has 1 entries, expected 2 (one per agent)",
+  )
+  @test.assert_eq(
+    EndowmentNotPerm.to_string(),
+    "endowment must give each good to exactly one agent",
   )
 }
