@@ -23,9 +23,38 @@ independent brute-force blocking-pair scan.
 ## Status
 
 - [x] `Preferences`: complete strict rankings enforced at construction
-- [ ] `deferred_acceptance` (Gale-Shapley) + stability certificate
-- [ ] hospital/residents (quotas), top trading cycles
-- [ ] CLI and property-based audit against brute force
+- [x] `deferred_acceptance` (Gale-Shapley) + independent stability certificate
+- [x] `matching_from`: rebuild a `Matching` from a *claimed* table and audit it
+- [x] hospital/residents (many-to-one DA with quotas) + capacity-aware certificate
+- [x] top trading cycles (Shapley-Scarf) + individual-rationality and Pareto audits
+- [x] CLI: `da` / `hr` / `ttc` / `check`, verdict printed as a `certificate:` line
+- [x] property-based tests: stability, quota-1 equivalence, proposer-optimality
+      against exhaustive stable-set enumeration, TTC core membership
+
+## The CLI, in one honest demo
+
+`check` runs **no** algorithm — it takes somebody else's answer and audits it:
+
+```
+$ moon run cli -- check "1,0,2|0,1,2|0,1,2" "2,1,0|0,2,1|0,1,2" "0,1,2"
+P0 -> R0
+P1 -> R1
+P2 -> R2
+certificate: UNSTABLE, 4 blocking pair(s): (P0, R1) (P1, R0) (P2, R0) (P2, R1)
+```
+
+## Where this sits in the Mooncakes registry
+
+Searched 77 keywords (3 rounds, README-level verification) before picking
+the topic. Adjacent packages exist; none does two-sided matching with
+auditable certificates:
+
+| Neighbour | What it does | Why MoonMatch is not it |
+| --- | --- | --- |
+| `pk9993/moonbit-auction` | price-based auctions | one-sided bidding, no preferences-over-partners stability |
+| `hutingyu-nuist/moonballot` | IRV vote tabulation | tallies votes, produces no two-sided matching |
+| `SUIKKKA/shiftweave` | shift-scheduling rules | constraint rules, not game-theoretic stability |
+| georust/geo port, CRDT×4, bloom×4, FFT, HLL… | other saturated niches | `gale`, `stable_marriage`, `two_sided`, `roommate`, `matching-markets` return **zero hits** |
 
 ## Quick example
 
