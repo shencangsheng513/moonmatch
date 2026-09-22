@@ -10,4 +10,9 @@ description = "Matching markets for MoonBit: two-sided stable matching with mach
 
 repository = "https://github.com/shencangsheng513/moonmatch"
 
-keywords = [ "matching-markets", "stable-marriage", "gale-shapley", "top-trading-cycles" ]
+keywords = [
+  "matching-markets",
+  "stable-marriage",
+  "gale-shapley",
+  "top-trading-cycles",
+]
