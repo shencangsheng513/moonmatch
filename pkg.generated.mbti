@@ -1,11 +1,52 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "shencangsheng513/moonmatch"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 
 // Errors
+pub suberror ProfileError {
+  Empty
+  RowLength(Side, Int, Int, Int)
+  NotPermutation(Side, Int)
+} derive(@debug.Debug)
+pub fn ProfileError::output(Self, &Logger) -> Unit
+pub fn ProfileError::to_repr(Self) -> @debug.Repr
+pub fn ProfileError::to_string(Self) -> String
+pub impl Show for ProfileError
 
 // Types and methods
+pub struct Matching {
+  preferences : Preferences
+  proposer_to_receiver : Array[Int]
+  receiver_to_proposer : Array[Int]
+} derive(Eq, @debug.Debug)
+pub fn Matching::blocking_pairs(Self) -> Array[(Int, Int)]
+pub fn Matching::equal(Self, Self) -> Bool
+pub fn Matching::is_stable(Self) -> Bool
+pub fn Matching::not_equal(Self, Self) -> Bool
+pub fn Matching::to_repr(Self) -> @debug.Repr
+
+pub struct Preferences {
+  proposer_prefs : Array[Array[Int]]
+  receiver_prefs : Array[Array[Int]]
+} derive(Eq, @debug.Debug)
+pub fn Preferences::deferred_acceptance(Self) -> Matching
+pub fn Preferences::equal(Self, Self) -> Bool
+pub fn Preferences::new(Array[Array[Int]], Array[Array[Int]]) -> Self raise ProfileError
+pub fn Preferences::not_equal(Self, Self) -> Bool
+pub fn Preferences::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Side {
+  Proposer
+  Receiver
+} derive(Eq, @debug.Debug)
+pub fn Side::equal(Self, Self) -> Bool
+pub fn Side::not_equal(Self, Self) -> Bool
+pub fn Side::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
