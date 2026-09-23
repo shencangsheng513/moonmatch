@@ -75,3 +75,19 @@ test "CertificateError Show texts are stable user-facing strings" {
     "receiver 1 is claimed twice",
   )
 }
+
+///|
+test "CertError Show texts are stable user-facing strings" {
+  @test.assert_eq(
+    WitnessNotDominating(0, 1).to_string(),
+    "witness for (proposer 0, receiver 1) is a lie: 1 prefers 0 to its holder — blocking pair",
+  )
+  @test.assert_eq(
+    HolderMismatch(1, 0, 0, 2).to_string(),
+    "witness for (proposer 1, receiver 0) names holder 0, but the matching holds 2",
+  )
+  @test.assert_eq(
+    MissingWitness(1, 0).to_string(),
+    "proposer 1 prefers receiver 0 to its partner, but no witness vouches for the refusal",
+  )
+}

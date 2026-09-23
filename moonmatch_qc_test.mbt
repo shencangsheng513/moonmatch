@@ -228,3 +228,41 @@ test "quickcheck: TTC output is a permutation, individually rational and core (n
     market.pareto_dominators(alloc).length() == 0
   })
 }
+
+///|
+/// The witness certificate and the brute-force scan share no code, so
+/// their agreement on RANDOM (mostly unstable) matchings is a real
+/// cross-check, not a tautology: verify passes exactly when the
+/// independent scan finds no blocking pair, and the JSON round trip
+/// changes nothing.
+test "quickcheck: certificate verify agrees with the brute-force scan (n, m <= 4)" {
+  @quickcheck.check((input : (Int, Int, Array[Int])) => {
+    let (a, b, seed) = input
+    let n = (a % 4 + 4) % 4 + 1
+    let m = (b % 4 + 4) % 4 + 1
+    let prefs = qc_prefs(seed, n, m)
+    // arbitrary (usually unstable) matching: the first k proposers take
+    // a shuffled set of receivers, the rest go unmatched
+    let k = if n < m { n } else { m }
+    let order = perm_from(seed, m, 300)
+    let p2p = Array(capacity=n)
+    for p in 0..<n {
+      p2p.push(if p < k { order[p] } else { -1 })
+    }
+    let arbitrary = prefs.matching_from(p2p) catch {
+      e => fail("generator built an invalid claim: \{e}")
+    }
+    let cert = arbitrary.certificate()
+    let back = @moonmatch.StabilityCert::from_json_string(cert.to_json_string()) catch {
+      e => fail("certificate round-trip failed: \{e}")
+    }
+    if back != cert {
+      return false
+    }
+    let mut verified = true
+    back.verify() catch {
+      _ => verified = false
+    }
+    verified == (arbitrary.blocking_pairs().length() == 0)
+  })
+}
