@@ -79,6 +79,10 @@ test "CertificateError Show texts are stable user-facing strings" {
 ///|
 test "CertError Show texts are stable user-facing strings" {
   @test.assert_eq(
+    InvalidWitness(1, 9999).to_string(),
+    "witness names proposer 1, receiver 9999: outside the market",
+  )
+  @test.assert_eq(
     WitnessNotDominating(0, 1).to_string(),
     "witness for (proposer 0, receiver 1) is a lie: 1 prefers 0 to its holder — blocking pair",
   )

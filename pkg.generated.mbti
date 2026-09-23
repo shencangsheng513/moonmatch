@@ -10,6 +10,7 @@ import {
 
 // Errors
 pub suberror CertError {
+  InvalidWitness(Int, Int)
   WitnessNotDominating(Int, Int)
   HolderMismatch(Int, Int, Int, Int)
   MissingWitness(Int, Int)

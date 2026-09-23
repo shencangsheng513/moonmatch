@@ -45,7 +45,7 @@ fn Lcg::table(self : Lcg, rows : Int, width : Int) -> Array[Array[Int]] {
 
 ///|
 fn market(n : Int) -> @moonmatch.Preferences {
-  let rng = Lcg::{ s: 42L + (n.to_int64() * 1000003L) }
+  let rng = Lcg::{ s: 42L + n.to_int64() * 1000003L, }
   @moonmatch.Preferences::new(rng.table(n, n), rng.table(n, n)) catch {
     e => @abort.abort("generated market must pass the gate: \{e}")
   }
@@ -58,28 +58,19 @@ fn main {
     let prefs = market(n)
     let m = prefs.deferred_acceptance()
     let cert = m.certificate()
-    let rng = Lcg::{ s: 7L + (n.to_int64()) }
+    let rng = Lcg::{ s: 7L + n.to_int64(), }
     let ttc_market = @moonmatch.Market::new(rng.table(n, n), rng.perm(n)) catch {
       e => @abort.abort("generated housing market must pass the gate: \{e}")
     }
-    b.bench(name="da_\{n}", fn() {
-      b.keep(prefs.deferred_acceptance())
-    })
-    b.bench(name="blocking_pairs_\{n}", fn() {
-      b.keep(m.blocking_pairs())
-    })
-    b.bench(name="certificate_\{n}", fn() {
-      b.keep(m.certificate())
-    })
+    b.bench(name="da_\{n}", fn() { b.keep(prefs.deferred_acceptance()) })
+    b.bench(name="blocking_pairs_\{n}", fn() { b.keep(m.blocking_pairs()) })
+    b.bench(name="certificate_\{n}", fn() { b.keep(m.certificate()) })
     b.bench(name="verify_\{n}", fn() {
       cert.verify() catch {
-        e =>
-          @abort.abort("the DA certificate must always verify: \{e}")
+        e => @abort.abort("the DA certificate must always verify: \{e}")
       }
     })
-    b.bench(name="ttc_\{n}", fn() {
-      b.keep(ttc_market.top_trading_cycles())
-    })
+    b.bench(name="ttc_\{n}", fn() { b.keep(ttc_market.top_trading_cycles()) })
   }
   println(b.dump_summaries())
 }

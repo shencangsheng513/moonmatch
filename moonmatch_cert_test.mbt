@@ -131,6 +131,24 @@ test "verify propagates structural errors from impossible claims untouched" {
 }
 
 ///|
+test "an out-of-range witness is rejected cleanly, not via a crash" {
+  // A hostile blob naming receiver 9999 must produce a verdict, not
+  // an array-index panic: this is the outsider-doors-must-not-crash
+  // guarantee that JSON parsing alone cannot give.
+  let cert = @moonmatch.StabilityCert::from_json_string(
+    blob("[1,2,0]", "[" + w(1, 9999, 0) + "]"),
+  ) catch {
+    e => fail("parse failed: \{e}")
+  }
+  try (cert.verify() : Unit) catch {
+    @moonmatch.InvalidWitness(1, 9999) => ()
+    e => fail("expected InvalidWitness(1, 9999), got \{e}")
+  } noraise {
+    _ => fail("expected the out-of-range witness to be refused")
+  }
+}
+
+///|
 test "junk blobs are refused before any checking happens" {
   try
     (
