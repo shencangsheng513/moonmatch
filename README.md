@@ -35,6 +35,8 @@ independent brute-force blocking-pair scan.
 - [x] exportable witness certificates: the JSON blob alone carries every
       fact needed — an auditor can even re-implement `verify` from scratch
       in ~40 trivial lines and check the answer without trusting this code
+- [x] benchmarks: fixed-seed markets through `moonbitlang/core/bench`,
+      measured numbers (and one measured-then-fixed hotspot) below
 
 ## The CLI, in one honest demo
 
@@ -69,6 +71,29 @@ If a witness lies about the market's true holder, the rejection names the
 exact blocking pair it was hiding (`witness for (proposer 0, receiver 1)
 is a lie: ...`). A quickcheck property verifies on random markets that
 `verify` and the independent brute-force scan *always* agree.
+
+## Performance, measured (not promised)
+
+`moon run --release benchmarks` measures every hot path on square
+random markets from a fixed-seed LCG — same inputs, same numbers, every
+run — using the official `moonbitlang/core/bench` harness (its
+batching and winsorised statistics, not our stopwatch). Medians of 10
+runs on the author's laptop, microseconds:
+
+| n | `deferred_acceptance` | `blocking_pairs` scan | `certificate` | `verify` | `top_trading_cycles` |
+| --- | --- | --- | --- | --- | --- |
+| 100 | 43 | 94 | 11 | 118 | 33 |
+| 300 | 332 | 773 | 38 | 775 | 176 |
+| 1000 | 3,439 | 12,548 | 224 | 8,618 | 1,184 |
+
+Two honest footnotes. First: the audits (`blocking_pairs`, `verify`)
+are Θ(n·m) *by design* — they re-check everything independently of the
+mechanisms, and that duplication is exactly what makes the certificate
+worth something. Second: this table caught a real bug in itself — the
+first version of `verify` was quadratic in certificate size (23.8 ms at
+n=1000, 100× the cost of generating the same certificate); it now
+buckets witnesses during the honesty pass (8.6 ms), and the remaining
+gap is the deliberate independent scanning.
 
 ## Where this sits in the Mooncakes registry
 
