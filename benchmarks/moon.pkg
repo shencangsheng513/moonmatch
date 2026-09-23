@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/core/abort",
+  "moonbitlang/core/bench",
+  "shencangsheng513/moonmatch",
+}
+
+pkgtype(kind: "executable")
+
+warnings = "-core_package_not_imported-unused_package"
