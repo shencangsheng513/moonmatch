@@ -19,7 +19,7 @@ impl Show for CliError with fn output(self : CliError, logger) {
 }
 
 ///|
-let usage : String = "moonmatch <command> [args...]\n  (no args) or `demo`   hand-traced 3x3 market\n  da <proposer-prefs> <receiver-prefs>\n  hr <proposer-prefs> <receiver-prefs> <quotas>\n  ttc <prefs> <endowment>\n  check <proposer-prefs> <receiver-prefs> <claim>\nrows separated by '|', integers by ','; -1 in a claim means unmatched.\n`check` never runs an algorithm: it re-verifies someone else's answer."
+let usage : String = "moonmatch <command> [args...]\n  (no args) or `demo`   hand-traced 3x3 market\n  da <proposer-prefs> <receiver-prefs>\n  hr <proposer-prefs> <receiver-prefs> <quotas>\n  ttc <prefs> <endowment>\n  check <proposer-prefs> <receiver-prefs> <claim>\n  cert <proposer-prefs> <receiver-prefs>\n  verify <certificate-json>\nrows separated by '|', integers by ','; -1 in a claim means unmatched.\n`check` never runs an algorithm: it re-verifies someone else's answer.\n`cert` exports a JSON certificate; `verify` checks one without running anything."
 
 ///|
 fn parse_ints(s : String) -> Array[Int] raise CliError {
@@ -71,6 +71,25 @@ fn verdict_line(blocks : Array[(Int, Int)]) -> String {
       out = out + " (P\{p}, R\{r})"
     }
     out
+  }
+}
+
+///|
+/// Verdict on a delivered JSON blob. Errors are printed, never
+/// propagated: a rejected certificate is an ANSWER, not a crash.
+fn verify_verdict(blob : String) -> String {
+  let maybe_cert = Some(@moonmatch.StabilityCert::from_json_string(blob)) catch {
+    _ => None
+  }
+  match maybe_cert {
+    None => "verify: REJECTED, certificate is not parseable JSON"
+    Some(cert) => {
+      let mut verdict = "verify: ACCEPTED (every tempting pair has an honest witness)"
+      cert.verify() catch {
+        e => verdict = "verify: REJECTED: \{e}"
+      }
+      verdict
+    }
   }
 }
 
@@ -142,6 +161,14 @@ fn run(argv : Array[String]) -> String raise {
       let m = prefs.matching_from(parse_ints(argv[3]))
       render_p2p(m.proposer_to_receiver) + verdict_line(m.blocking_pairs())
     }
+    n if n >= 3 && argv[0] == "cert" => {
+      let prefs = @moonmatch.Preferences::new(
+        parse_table(argv[1]),
+        parse_table(argv[2]),
+      )
+      "certificate: \{prefs.deferred_acceptance().certificate().to_json_string()}"
+    }
+    n if n >= 2 && argv[0] == "verify" => verify_verdict(argv[1])
     _ => raise Usage("unrecognized arguments; here is the help:\n\{usage}")
   }
 }

@@ -34,6 +34,37 @@ test "cli ttc reports the cycle outcome and both audits" {
 }
 
 ///|
+test "cli cert exports the exact JSON blob and verify accepts it back" {
+  let blob = "{\"proposer_prefs\":[[1,0,2],[0,1,2],[0,1,2]],\"receiver_prefs\":[[2,1,0],[0,2,1],[0,1,2]],\"claim\":[1,2,0],\"witnesses\":[{\"proposer\":1,\"receiver\":0,\"holder\":2},{\"proposer\":1,\"receiver\":1,\"holder\":0}]}"
+  let exported = run(["cert", "1,0,2|0,1,2|0,1,2", "2,1,0|0,2,1|0,1,2"])
+  @test.assert_eq(exported, "certificate: \{blob}")
+  @test.assert_eq(
+    run(["verify", blob]),
+    "verify: ACCEPTED (every tempting pair has an honest witness)",
+  )
+}
+
+///|
+test "cli verify rejects incomplete, impossible and unreadable blobs" {
+  @test.assert_eq(
+    run([
+      "verify", "{\"proposer_prefs\":[[1,0,2],[0,1,2],[0,1,2]],\"receiver_prefs\":[[2,1,0],[0,2,1],[0,1,2]],\"claim\":[1,2,0],\"witnesses\":[]}",
+    ]),
+    "verify: REJECTED: proposer 1 prefers receiver 0 to its partner, but no witness vouches for the refusal",
+  )
+  @test.assert_eq(
+    run([
+      "verify", "{\"proposer_prefs\":[[1,0,2],[0,1,2],[0,1,2]],\"receiver_prefs\":[[2,1,0],[0,2,1],[0,1,2]],\"claim\":[1,1,0],\"witnesses\":[]}",
+    ]),
+    "verify: REJECTED: receiver 1 is claimed twice",
+  )
+  @test.assert_eq(
+    run(["verify", "not json"]),
+    "verify: REJECTED, certificate is not parseable JSON",
+  )
+}
+
+///|
 test "cli parsers reject junk with usage errors" {
   try (parse_ints("0,x") : Array[Int]) catch {
     Usage(_) => ()
