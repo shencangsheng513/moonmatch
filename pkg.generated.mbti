@@ -3,11 +3,22 @@ package "shencangsheng513/moonmatch"
 
 import {
   "moonbitlang/core/debug",
+  "moonbitlang/core/json",
 }
 
 // Values
 
 // Errors
+pub suberror CertError {
+  WitnessNotDominating(Int, Int)
+  HolderMismatch(Int, Int, Int, Int)
+  MissingWitness(Int, Int)
+} derive(@debug.Debug)
+pub fn CertError::output(Self, &Logger) -> Unit
+pub fn CertError::to_repr(Self) -> @debug.Repr
+pub fn CertError::to_string(Self) -> String
+pub impl Show for CertError
+
 pub suberror CertificateError {
   ClaimLength(Int, Int)
   PartnerOutOfRange(Int, Int)
@@ -79,6 +90,7 @@ pub struct Matching {
   receiver_to_proposer : Array[Int]
 } derive(Eq, @debug.Debug)
 pub fn Matching::blocking_pairs(Self) -> Array[(Int, Int)]
+pub fn Matching::certificate(Self) -> StabilityCert
 pub fn Matching::equal(Self, Self) -> Bool
 pub fn Matching::is_stable(Self) -> Bool
 pub fn Matching::not_equal(Self, Self) -> Bool
@@ -103,6 +115,32 @@ pub(all) enum Side {
 pub fn Side::equal(Self, Self) -> Bool
 pub fn Side::not_equal(Self, Self) -> Bool
 pub fn Side::to_repr(Self) -> @debug.Repr
+
+pub struct StabilityCert {
+  proposer_prefs : Array[Array[Int]]
+  receiver_prefs : Array[Array[Int]]
+  claim : Array[Int]
+  witnesses : Array[Witness]
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub fn StabilityCert::equal(Self, Self) -> Bool
+pub fn StabilityCert::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn StabilityCert::from_json_string(String) -> Self raise
+pub fn StabilityCert::not_equal(Self, Self) -> Bool
+pub fn StabilityCert::to_json(Self) -> Json
+pub fn StabilityCert::to_json_string(Self) -> String
+pub fn StabilityCert::to_repr(Self) -> @debug.Repr
+pub fn StabilityCert::verify(Self) -> Unit raise
+
+pub struct Witness {
+  proposer : Int
+  receiver : Int
+  holder : Int
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub fn Witness::equal(Self, Self) -> Bool
+pub fn Witness::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Witness::not_equal(Self, Self) -> Bool
+pub fn Witness::to_json(Self) -> Json
+pub fn Witness::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 
