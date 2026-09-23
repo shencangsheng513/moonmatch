@@ -14,11 +14,13 @@ every outcome ships with a **machine-checkable stability certificate**, so
 
 Roommate pairing, school-seat assignment, shift swaps, organ exchanges:
 these are all *matching markets*, and the 2012 Nobel Prize (Roth & Shapley)
-says the algorithm you choose changes who wins. The MoonBit ecosystem has
-auctions, voting tabulation, and scheduling rule engines — but no matching
-engine at all. This library fills that gap with an emphasis the reference
-implementations don't have: every matching can be *audited* by an
-independent brute-force blocking-pair scan.
+says the algorithm you choose changes who wins. The registry already has
+naive DA/TTC implementations (see the landscape table below — checking for
+them honestly is what shaped this library). What none of them provide is
+the part this library is built around: every outcome ships with an
+**independently auditable stability certificate** — a brute-force
+blocking-pair scan, and an exportable witness blob a stranger can verify
+without trusting or re-running any code here.
 
 ## Status
 
@@ -97,16 +99,23 @@ gap is the deliberate independent scanning.
 
 ## Where this sits in the Mooncakes registry
 
-Searched 77 keywords (3 rounds, README-level verification) before picking
-the topic. Adjacent packages exist; none does two-sided matching with
-auditable certificates:
+Keyword sweeps are cheap to get wrong, so every neighbour below was
+verified at README/interface level, twice. (An earlier version of this
+table described `moonbit-auction` as "one-sided bidding only" — a deeper
+look found a whole `src/matching` subtree, and the correction is part of
+this project's story.) As of 2026-09-23:
 
-| Neighbour | What it does | Why MoonMatch is not it |
+| Neighbour | What it actually has | What it does not have |
 | --- | --- | --- |
-| `pk9993/moonbit-auction` | price-based auctions | one-sided bidding, no preferences-over-partners stability |
-| `hutingyu-nuist/moonballot` | IRV vote tabulation | tallies votes, produces no two-sided matching |
-| `SUIKKKA/shiftweave` | shift-scheduling rules | constraint rules, not game-theoretic stability |
-| georust/geo port, CRDT×4, bloom×4, FFT, HLL… | other saturated niches | `gale`, `stable_marriage`, `two_sided`, `roommate`, `matching-markets` return **zero hits** |
+| `pk9993/moonbit-auction/src/matching` | DA, TTC, TTC-with-chains, capacitated matching; `audit_matching` counts duplicate proposers, invalid references, capacity overflow | any *stability* check — the repo has no blocking-pair logic at all; no exportable certificate |
+| `bobzhang/loop_invariants_graph/gale_shapley_stable_matching` (2026-09-22) | square-table DA + `is_stable -> Bool`, with loop-invariant documentation | one-to-one only (no HR quotas, no TTC); the check is in-library trust, not an artifact a third party can audit |
+| `hutingyu-nuist/moonballot` | IRV vote tabulation | two-sided matching of any kind |
+| `SUIKKKA/shiftweave` | shift-scheduling constraint rules | game-theoretic stability |
+
+The gap MoonMatch occupies is the column on the right: **stability as a
+verifiable artifact** — exportable witness certificates, an outsider-only
+verification path, capacity-aware HR certificates, and TTC IR/Pareto
+audits, none of which any registry package provides.
 
 ## Quick example
 
