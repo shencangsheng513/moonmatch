@@ -1,6 +1,11 @@
 # MoonMatch
 
 [![CI](https://github.com/shencangsheng513/moonmatch/actions/workflows/ci.yml/badge.svg)](https://github.com/shencangsheng513/moonmatch/actions/workflows/ci.yml)
+[shencangsheng513/moonmatch on mooncakes.io](https://mooncakes.io/docs/shencangsheng513/moonmatch)
+
+```sh
+moon add shencangsheng513/moonmatch   # published on mooncakes.io
+```
 
 Matching-market engine for [MoonBit](https://www.moonbitlang.com): Gale-Shapley
 stable matching, hospital/residents with quotas, and top trading cycles —
